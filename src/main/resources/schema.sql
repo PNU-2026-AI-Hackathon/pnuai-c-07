@@ -224,3 +224,83 @@ INSERT INTO term_versions (
           TRUE,
           '2026-03-12 00:00:00'
       );
+
+DROP TABLE IF EXISTS category_option;
+DROP TABLE IF EXISTS category;
+
+-- 키워드 카테고리 테이블
+CREATE TABLE IF NOT EXISTS category (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 키워드에 따른 value 테이블
+CREATE TABLE IF NOT EXISTS category_option (
+    id BIGSERIAL PRIMARY KEY,
+    category_id BIGINT NOT NULL,
+    value VARCHAR(100) NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES category(id)
+);
+
+
+-- 키워드 카테고리 삽입
+INSERT INTO category (name) VALUES
+('거주지역'),
+('현재신분'),
+('저축기간'),
+('핵심혜택'),
+('상품관심사'),
+('은행거래');
+
+-- 키워드 value 삽입
+-- 1) 거주 지역
+INSERT INTO category_option (category_id, value) VALUES
+(1, '서울'),
+(1, '부산'),
+(1, '대구'),
+(1, '인천'),
+(1, '광주'),
+(1, '대전'),
+(1, '울산'),
+(1, '세종'),
+(1, '경기'),
+(1, '강원'),
+(1, '충북'),
+(1, '충남'),
+(1, '전북'),
+(1, '전남'),
+(1, '경북'),
+(1, '경남'),
+(1, '제주');
+
+-- 2) 현재 신분
+INSERT INTO category_option (category_id, value) VALUES
+(2, '미취업'),
+(2, '알바/프리랜서'),
+(2, '중소기업 재직'),
+(2, '군복무');
+
+-- 3) 저축 기간
+INSERT INTO category_option (category_id, value) VALUES
+(3, '5년 이상'),
+(3, '2~3년'),
+(3, '1년 내외');
+
+-- 4) 핵심 기간
+INSERT INTO category_option (category_id, value) VALUES
+(4, '최고이율 중심'),
+(4, '비과세'),
+(4, '우대조건 간편'),
+(4, '정부기여금');
+
+-- 5) 상품 관심사
+INSERT INTO category_option (category_id, value) VALUES
+(5, '저축'),
+(5, '대출');
+
+-- 6) 은행 거래
+INSERT INTO category_option (category_id, value) VALUES
+(6, '첫거래 고객'),
+(6, '급여이체 가능'),
+(6, '카드실적 연동');
+

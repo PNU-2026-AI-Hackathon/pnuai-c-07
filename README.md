@@ -4,11 +4,18 @@
 ---
 
 ## 1. 기술스택
-- Backend : Spring Boot
+- Backend : Spring Boot / OAuth2
 - Database : PostgreSQL
+- Infra : Docker / Docker Compose
 
+## 2. 기능 요약
+- OAuth2 로그인(Google, Kakao)
+- JWT 기반 인증
+- 사용자 / 약관 / 카테고리 관리 
+- 동적 입력 로직
+- 사용자 맞춤 금융 상품 추천 (예정)
 
-## 2. API 명세
+## 3. API 명세
 ### /auth
 | 기능      | Method | API Path   |
 | ------- | ------ | ---------- |
@@ -20,7 +27,6 @@
 | ---------- | ------ | ----------------------- |
 | 구글 계정 로그인  | GET    | `/authorization/google` |
 | 카카오 계정 로그인 | GET    | `/authorization/kakao`  |
-
 
 ### /user
 | 기능       | Method | API Path |
@@ -34,11 +40,17 @@
 | 약관 목록 조회 | GET    | `/`      |
 | 약관 동의    | POST   | `/agree` |
 
+### /category
+| 기능            | Method | API Path        |
+|---------------|--------|----------------|
+| 카테고리 목록 조회 | GET    | `/api/categories` |
 
-## 3. 개발현황
-Update : 2026/03/14
+## 4. 개발현황
+Update : 2026/04/05
+
 | 도메인       | 진행상황 | 비고 |
 | -------- | ------ | -------- |
 | Auth | 완료    | OAuth2 기반 SNS 로그인, JWT(Access Token + Refresh Token)     |
 | User   | 완료   | 유저 정보 조회 및 수정 |
-| Term   | 완료   | 약관 조회 및 약관 동의 기록 |
+| Term   | 완료   | 약관 조회 및 약관 동의 기록 , 버전 관리 |
+|Category   | 완료   | 키워드 데이터 저장 및 전달 |
