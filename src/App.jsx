@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Main from './pages/Main';
+import Introduce from './pages/Introduce';
 import Agreement from './pages/Agreement';
 import AuthGuard from './routes/AuthGuard';
 
@@ -9,6 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/introduce" element={<Introduce />} />
         
         <Route
           path="/"
