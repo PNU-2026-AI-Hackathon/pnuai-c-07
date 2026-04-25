@@ -1,5 +1,6 @@
 package apptive.fin.global.config;
 
+import apptive.fin.auth.oauth.OAuth2FailureHandler;
 import apptive.fin.auth.security.BusinessAccessDeniedHandler;
 import apptive.fin.auth.security.BusinessAuthenticationEntryPoint;
 import apptive.fin.auth.security.JwtAuthFilter;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final OAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
     private final BusinessAuthenticationEntryPoint businessAuthenticationEntryPoint;
     private final BusinessAccessDeniedHandler businessAccessDeniedHandler;
     private final AppProperties appProperties;
@@ -46,7 +48,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
            //                     .requestMatchers("/favicon.ico").permitAll()
-                                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
                                 //.anyRequest().permitAll()
@@ -55,6 +57,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(businessAuthenticationEntryPoint)

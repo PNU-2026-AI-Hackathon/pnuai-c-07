@@ -14,7 +14,8 @@ public record AppProperties(
     ) {}
 
     public record OAuth2(
-            String successRedirectUrl
+            String successRedirectUrl,
+            String failureRedirectUrl
     ) {}
 
     public record Frontend(

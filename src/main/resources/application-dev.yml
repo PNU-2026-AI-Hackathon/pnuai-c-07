@@ -54,3 +54,4 @@ app:
     same-site: Lax
   oauth2:
     success-redirect-url: "/"
+    failure-redirect-url: "/login-error"
