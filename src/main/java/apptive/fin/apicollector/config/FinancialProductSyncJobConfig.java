@@ -4,6 +4,7 @@ import apptive.fin.apicollector.normalize.ProductDraft;
 import apptive.fin.apicollector.raw.ProductRaw;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
@@ -24,13 +25,14 @@ public class FinancialProductSyncJobConfig {
     public Job financialProductSyncJob(
             JobRepository jobRepository,
             Step fetchOntongYouthRawStep,
-            Step fetchFssRawStep,
-            Step normalizeRawProductStep,
-            Step deactivateMissingProductStep
+            Step fetchFssRawStep
+//            Step normalizeRawProductStep,
+//            Step deactivateMissingProductStep
     ) {
         return new JobBuilder("financialProductSyncJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
                 .start(fetchOntongYouthRawStep)
-//                .next(fetchFssRawStep)
+                .next(fetchFssRawStep)
 //                .next(normalizeRawProductStep)
 //                .next(deactivateMissingProductStep)
                 .build();
@@ -44,6 +46,17 @@ public class FinancialProductSyncJobConfig {
     ) {
         return new StepBuilder("fetchOntongYouthRawStep", jobRepository)
                 .tasklet(fetchOntongYouthRawTasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
+    public Step fetchFssRawStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            Tasklet fetchFssRawTasklet
+    ) {
+        return new StepBuilder("fetchFssRawStep", jobRepository)
+                .tasklet(fetchFssRawTasklet, transactionManager)
                 .build();
     }
 

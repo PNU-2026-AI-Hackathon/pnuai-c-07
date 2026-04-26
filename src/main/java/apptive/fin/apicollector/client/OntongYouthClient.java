@@ -18,17 +18,13 @@ public class OntongYouthClient {
     private final RestClient ontongYouthRestClient;
 
     public List<JsonNode> fetchAll() {
-        RestClient restClient = RestClient.builder()
-                .baseUrl(properties.ontongYouth().baseUrl())
-                .build();
-
         List<JsonNode> result = new ArrayList<>();
 
         int page = 1;
         int pageSize = properties.ontongYouth().pageSize();
 
         while (true) {
-            JsonNode response = fetchPage(restClient, page, pageSize);
+            JsonNode response = fetchPage(ontongYouthRestClient, page, pageSize);
             List<JsonNode> items = extractItems(response);
 
             if (items.isEmpty()) {
