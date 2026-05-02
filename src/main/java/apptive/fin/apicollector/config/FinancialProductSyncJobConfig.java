@@ -1,9 +1,13 @@
 package apptive.fin.apicollector.config;
 
+import apptive.fin.apicollector.batch.RawProductItemReader;
 import apptive.fin.apicollector.normalize.ProductDraft;
 import apptive.fin.apicollector.raw.ProductRaw;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -23,18 +27,19 @@ public class FinancialProductSyncJobConfig {
 
     @Bean
     public Job financialProductSyncJob(
-            JobRepository jobRepository,
-            Step fetchOntongYouthRawStep,
-            Step fetchFssRawStep
-//            Step normalizeRawProductStep,
-//            Step deactivateMissingProductStep
+        JobRepository jobRepository,
+        JobExecutionDecider sourceDecider,
+        Flow fssSyncFlow,
+        Flow ontongYouthSyncFlow,
+        Flow allSyncFlow
     ) {
         return new JobBuilder("financialProductSyncJob", jobRepository)
                 .incrementer(new RunIdIncrementer())
-                .start(fetchOntongYouthRawStep)
-                .next(fetchFssRawStep)
-//                .next(normalizeRawProductStep)
-//                .next(deactivateMissingProductStep)
+                .start(sourceDecider)
+                    .on("FSS").to(fssSyncFlow)
+                    .on("ONTONG_YOUTH").to(ontongYouthSyncFlow)
+                    .on("ALL").to(allSyncFlow)
+                .end()
                 .build();
     }
 
@@ -59,5 +64,94 @@ public class FinancialProductSyncJobConfig {
                 .tasklet(fetchFssRawTasklet, transactionManager)
                 .build();
     }
+
+
+    @Bean
+    public Flow fssSyncFlow(
+            Step fetchFssRawStep,
+            Step normalizeFssRawProductStep,
+            Step deactivateMissingProductStep
+    ) {
+        return new FlowBuilder<Flow>("fssSyncFlow")
+                .start(fetchFssRawStep)
+                .next(normalizeFssRawProductStep)
+                .next(deactivateMissingProductStep)
+                .build();
+    }
+
+    @Bean
+    public Flow ontongYouthSyncFlow(
+            Step fetchOntongYouthRawStep,
+            Step normalizeOntongRawProductStep,
+            Step deactivateMissingProductStep
+    ) {
+        return new FlowBuilder<Flow>("ontongYouthSyncFlow")
+                .start(fetchOntongYouthRawStep)
+                .next(normalizeOntongRawProductStep)
+                .next(deactivateMissingProductStep)
+                .build();
+    }
+
+    @Bean
+    public Flow allSyncFlow(
+            Step fetchOntongYouthRawStep,
+            Step fetchFssRawStep,
+            Step normalizeOntongRawProductStep,
+            Step normalizeFssRawProductStep,
+            Step deactivateMissingProductStep
+    ) {
+        return new FlowBuilder<Flow>("allSyncFlow")
+                .start(fetchOntongYouthRawStep)
+                .next(fetchFssRawStep)
+                .next(normalizeOntongRawProductStep)
+                .next(normalizeFssRawProductStep)
+                .next(deactivateMissingProductStep)
+                .build();
+    }
+
+
+    @Bean
+    public Step normalizeFssRawProductStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            RawProductItemReader fssRawProductItemReader,
+            ItemProcessor<ProductRaw, ProductDraft> rawProductItemProcessor,
+            ItemWriter<ProductDraft> productDraftItemWriter
+    ) {
+        return new StepBuilder("normalizeFssRawProductStep", jobRepository)
+                .<ProductRaw, ProductDraft>chunk(100, transactionManager)
+                .reader(fssRawProductItemReader)
+                .processor(rawProductItemProcessor)
+                .writer(productDraftItemWriter)
+                .build();
+    }
+
+    @Bean
+    public Step normalizeOntongRawProductStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            RawProductItemReader ontongRawProductItemReader,
+            ItemProcessor<ProductRaw, ProductDraft> rawProductItemProcessor,
+            ItemWriter<ProductDraft> productDraftItemWriter
+    ) {
+        return new StepBuilder("normalizeOntongYouthRawProductStep", jobRepository)
+                .<ProductRaw, ProductDraft>chunk(100, transactionManager)
+                .reader(ontongRawProductItemReader)
+                .processor(rawProductItemProcessor)
+                .writer(productDraftItemWriter)
+                .build();
+    }
+
+    @Bean
+    public Step deactivateMissingProductStep(
+            JobRepository jobRepository,
+            PlatformTransactionManager transactionManager,
+            Tasklet deactivateMissingProductTasklet
+    ) {
+        return new StepBuilder("deactivateMissingProductStep", jobRepository)
+                .tasklet(deactivateMissingProductTasklet, transactionManager)
+                .build();
+    }
+
 
 }

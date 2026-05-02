@@ -1,6 +1,7 @@
 package apptive.fin.apicollector.raw;
 
 import apptive.fin.apicollector.Source;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,6 +22,7 @@ public interface ProductRawRepository extends JpaRepository<ProductRaw, Long> {
         SELECT r
             FROM ProductRaw r
             WHERE r.source in :sources
+                and r.id > :lastSeenId
                 and (
                     r.normalizedAt is null
                     or r.normalizerVersion is null
@@ -28,7 +30,12 @@ public interface ProductRawRepository extends JpaRepository<ProductRaw, Long> {
                 )
             order by r.id asc
     """)
-    List<ProductRaw> findAllNeedNormalize(Collection<Source> sources, int normalizeVersion);
+    List<ProductRaw> findNextNeedNormalize(
+            Collection<Source> sources,
+            Long lastSeenId,
+            int normalizerVersion,
+            Pageable pageable
+    );
 
     List<ProductRaw> findAllBySourceAndLastSeenAtBefore(
             Source source,

@@ -4,13 +4,16 @@ import apptive.fin.apicollector.Source;
 import apptive.fin.apicollector.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "product_raw")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class ProductRaw extends BaseTimeEntity {
 
     @Id
