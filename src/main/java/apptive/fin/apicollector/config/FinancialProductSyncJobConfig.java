@@ -119,10 +119,11 @@ public class FinancialProductSyncJobConfig {
             ItemWriter<ProductDraft> productDraftItemWriter
     ) {
         return new StepBuilder("normalizeFssRawProductStep", jobRepository)
-                .<ProductRaw, ProductDraft>chunk(100, transactionManager)
+                .<ProductRaw, ProductDraft>chunk(100)
                 .reader(fssRawProductItemReader)
                 .processor(rawProductItemProcessor)
                 .writer(productDraftItemWriter)
+                .transactionManager(transactionManager)
                 .build();
     }
 
@@ -135,10 +136,11 @@ public class FinancialProductSyncJobConfig {
             ItemWriter<ProductDraft> productDraftItemWriter
     ) {
         return new StepBuilder("normalizeOntongYouthRawProductStep", jobRepository)
-                .<ProductRaw, ProductDraft>chunk(100, transactionManager)
+                .<ProductRaw, ProductDraft>chunk(100)
                 .reader(ontongRawProductItemReader)
                 .processor(rawProductItemProcessor)
                 .writer(productDraftItemWriter)
+                .transactionManager(transactionManager)
                 .build();
     }
 

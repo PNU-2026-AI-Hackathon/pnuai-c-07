@@ -1,11 +1,22 @@
 package apptive.fin.apicollector.product.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name="provider")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "provider",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_provider_source_code",
+                        columnNames = {"source_id", "code"}
+                )
+        }
+)
 public class Provider {
 
     @Id
@@ -20,4 +31,18 @@ public class Provider {
 
     @Column(nullable = false)
     private String name;
+
+    private Provider(ProductSource source, String code, String name) {
+        this.source = source;
+        this.code = code;
+        this.name = name;
+    }
+
+    public static Provider create(ProductSource source, String code, String name) {
+        return new Provider(source, code, name);
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

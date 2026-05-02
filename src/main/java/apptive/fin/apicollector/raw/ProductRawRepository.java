@@ -4,9 +4,9 @@ import apptive.fin.apicollector.Source;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +31,9 @@ public interface ProductRawRepository extends JpaRepository<ProductRaw, Long> {
             order by r.id asc
     """)
     List<ProductRaw> findNextNeedNormalize(
-            Collection<Source> sources,
-            Long lastSeenId,
-            int normalizerVersion,
+            @Param("sources") Collection<Source> sources,
+            @Param("lastSeenId") Long lastSeenId,
+            @Param("normalizerVersion") int normalizerVersion,
             Pageable pageable
     );
 

@@ -1,0 +1,90 @@
+package apptive.fin.apicollector.normalize;
+
+import apptive.fin.apicollector.Source;
+import apptive.fin.apicollector.config.CollectorProperties;
+import apptive.fin.apicollector.product.ProductType;
+import apptive.fin.apicollector.raw.ProductRaw;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+@Component
+@RequiredArgsConstructor
+public class OntongYouthProductNormalizer extends AbstractProductNormalizer implements ProductNormalizer {
+
+    private final ObjectMapper objectMapper;
+    private final CollectorProperties properties;
+
+    @Override
+    public Source source() {
+        return Source.ONTONG_YOUTH;
+    }
+
+    @Override
+    public ProductDraft normalize(ProductRaw rawProduct) {
+        JsonNode raw = read(rawProduct);
+        String providerName = firstText(raw, "sprvsnInstCdNm", "rgtrInstCdNm", "rgtrUpInstCdNm");
+        String providerCode = firstText(raw, "sprvsnInstCd", "rgtrInstCd", "rgtrUpInstCd", "sprvsnInstCdNm", "rgtrInstCdNm");
+        String productName = firstText(raw, "plcyNm");
+        String content = joinContent(
+                raw,
+                "plcyExplnCn",
+                "plcySprtCn",
+                "addAplyQlfcCndCn",
+                "ptcpPrpTrgtCn",
+                "plcyAplyMthdCn",
+                "sbmsnDcmntCn",
+                "earnEtcCn",
+                "etcMttrCn"
+        );
+
+        return ProductDraft.builder()
+                .rawId(rawProduct.getId())
+                .rawSource(rawProduct.getSource())
+                .normalizerVersion(properties.normalizerVersion())
+                .sourceCode(Source.ONTONG_YOUTH.name())
+                .providerCode(required(providerCode, "providerCode", rawProduct))
+                .providerName(required(providerName, "providerName", rawProduct))
+                .type(ProductType.GOVERNMENT)
+                .productCode(firstText(raw, "plcyNo") != null ? firstText(raw, "plcyNo") : rawProduct.getExternalId())
+                .productName(required(productName, "productName", rawProduct))
+                .content(content)
+                .minAge(integer(raw, "sprtTrgtMinAge"))
+                .maxAge(integer(raw, "sprtTrgtMaxAge"))
+                .earnMaxAmt(longValue(raw, "earnMaxAmt"))
+                .requiresHomeless(containsAny(content, "무주택"))
+                .requiresHouseholder(containsAny(content, "세대주"))
+                .applyUrl(firstText(raw, "aplyUrlAddr", "refUrlAddr1", "refUrlAddr2"))
+                .options(java.util.List.of())
+                .keywords(keywordsFromText(
+                        text(raw, "plcyKywdNm"),
+                        text(raw, "lclsfNm"),
+                        text(raw, "mclsfNm"),
+                        text(raw, "zipCd"),
+                        productName,
+                        content
+                ))
+                .build();
+    }
+
+    private JsonNode read(ProductRaw rawProduct) {
+        try {
+            return objectMapper.readTree(rawProduct.getRawJson());
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Failed to parse Ontong Youth raw JSON. rawId=" + rawProduct.getId(), e);
+        }
+    }
+
+    private boolean containsAny(String value, String token) {
+        return value != null && value.contains(token);
+    }
+
+    private String required(String value, String fieldName, ProductRaw rawProduct) {
+        if (value == null) {
+            throw new IllegalArgumentException("Ontong Youth " + fieldName + " is required. rawId=" + rawProduct.getId());
+        }
+        return value;
+    }
+}

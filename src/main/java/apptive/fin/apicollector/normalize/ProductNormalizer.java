@@ -1,8 +1,11 @@
 package apptive.fin.apicollector.normalize;
 
-import tools.jackson.databind.JsonNode;
+import apptive.fin.apicollector.Source;
+import apptive.fin.apicollector.raw.ProductRaw;
 
 public interface ProductNormalizer {
 
-    ProductDraft normalizer(String externalId, JsonNode raw);
+    Source source();
+
+    ProductDraft normalize(ProductRaw rawProduct);
 }
