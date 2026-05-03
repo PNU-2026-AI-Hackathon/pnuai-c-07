@@ -13,14 +13,12 @@ export default function IntroducePage() {
 
   return (
     <div
-      style={{
-        minWidth: '1400px',  // 이 이하로 절대 줄어들지 않음
-        zoom: 'var(--page-scale, 1)',
-      }}
+      style={{ minWidth: '1400px' }}  // 이 이하로 절대 줄어들지 않음
     >
-
       <Header />
-      <main className="flex-1">
+
+      <div style={{ zoom:'var(--page-scale, 1)' }}>
+        <main className="flex-1">
           <IntroduceSection />
           <StepIntroSection />
           <MatchingScoreSection />
@@ -30,7 +28,8 @@ export default function IntroducePage() {
           <MagazineSection />
           <MyPageSection />
           <Footer />
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

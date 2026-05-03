@@ -4,6 +4,7 @@ import Main from './pages/Main';
 import Introduce from './pages/Introduce';
 import Agreement from './pages/Agreement';
 import AuthGuard from './routes/AuthGuard';
+import Recommend from './pages/Recommend';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/introduce" element={<Introduce />} />
+        <Route path="/recommend" element={<Recommend />} />
         
         <Route
           path="/"
