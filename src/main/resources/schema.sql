@@ -6,11 +6,11 @@ create table if not exists product_raw
     external_id        varchar(150) not null,
     content_hash       varchar(64)  not null,
     raw_json           text         not null,
-    last_seen_at       timestamp    not null,
-    normalized_at      timestamp,
+    last_seen_at       timestamptz    not null,
+    normalized_at      timestamptz,
     normalizer_version integer,
-    created_at         timestamp    not null,
-    updated_at         timestamp,
+    created_at         timestamptz    not null,
+    updated_at         timestamptz,
     constraint uk_product_raw_source_external_id
         unique (source, external_id)
 );
@@ -67,8 +67,9 @@ create table if not exists product
     requires_homeless    boolean      not null,
     requires_householder boolean      not null,
     apply_url            varchar(255),
-    created_at           timestamp    not null,
-    updated_at           timestamp,
+    created_at           timestamptz    not null,
+    updated_at           timestamptz,
+    is_joinable BOOLEAN not null DEFAULT true,
     constraint fk_product_product_source
         foreign key (source_id) references product_source (id),
     constraint fk_product_provider

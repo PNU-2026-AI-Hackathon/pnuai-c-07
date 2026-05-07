@@ -26,8 +26,9 @@ collector:
   enabled: true
   source: ALL
   mode: SYNC
-  normalizer-version: 1
+  normalizer-version: 2
   reader-page-size : 500
+  unseen-disable-period : 1
 
   ontong-youth:
     base-url: https://www.youthcenter.go.kr

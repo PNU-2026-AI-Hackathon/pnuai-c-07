@@ -12,6 +12,7 @@ public record CollectorProperties(
         Mode mode,
         int normalizerVersion,
         int readerPageSize,
+        int unseenDisablePeriod,
         OntongYouth ontongYouth,
         Fss fss
 ) {

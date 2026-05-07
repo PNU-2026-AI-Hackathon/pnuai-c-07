@@ -111,6 +111,7 @@ class OntongYouthProductNormalizerTest {
                 Mode.NORMALIZE_ONLY,
                 3,
                 500,
+                7,
                 new CollectorProperties.OntongYouth("http://localhost", "key", 100),
                 new CollectorProperties.Fss("http://localhost", "key", 100)
         );

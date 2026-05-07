@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
@@ -15,5 +16,5 @@ import java.time.LocalDateTime;
 public class BaseTimeEntity extends BaseCreatedAtEntity {
     @LastModifiedDate
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }

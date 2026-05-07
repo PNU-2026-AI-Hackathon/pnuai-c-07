@@ -82,6 +82,10 @@ public class Product extends BaseTimeEntity {
     // url
     private String applyUrl;
 
+    // 현재 가입 가능 상품 판단
+    @Column(nullable = false)
+    private Boolean isJoinable = true;
+
     // 연관관계
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOption> options = new ArrayList<>();
@@ -156,5 +160,13 @@ public class Product extends BaseTimeEntity {
                 this.keywords.add(ProductKeyword.create(this, keywordCode));
             }
         }
+    }
+
+    public void markUnjoinable() {
+        this.isJoinable = false;
+    }
+
+    public void markJoinable() {
+        this.isJoinable = true;
     }
 }

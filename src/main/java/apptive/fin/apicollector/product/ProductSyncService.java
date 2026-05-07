@@ -1,5 +1,6 @@
 package apptive.fin.apicollector.product;
 
+import apptive.fin.apicollector.Source;
 import apptive.fin.apicollector.normalize.ProductDraft;
 import apptive.fin.apicollector.product.entity.Product;
 import apptive.fin.apicollector.product.entity.ProductSource;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -26,6 +28,13 @@ public class ProductSyncService {
         for (ProductDraft draft : drafts) {
             sync(draft);
         }
+    }
+
+    @Transactional
+    public int disableAllUnseenProducts(Source source, Instant lastSeen) {
+        ProductSource productSource = productSourceRepository.findByCode(source.name())
+                .orElseThrow(()->new IllegalArgumentException("invalid source"));
+        return productRepository.disableBySourceAndLastSeenBefore(productSource, source, lastSeen);
     }
 
     private void sync(ProductDraft draft) {
@@ -61,6 +70,7 @@ public class ProductSyncService {
                 )));
 
         product.updateFrom(draft, provider);
+        product.markJoinable();
         product.replaceOptions(draft.options());
         product.replaceKeywords(draft.keywords());
 

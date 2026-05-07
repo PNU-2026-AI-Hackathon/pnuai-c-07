@@ -18,6 +18,19 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    devtools {
+        java {
+            srcDir 'src/devtools/java'
+        }
+        resources {
+            srcDir 'src/devtools/resources'
+        }
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += output + compileClasspath + sourceSets.test.resources
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -40,4 +53,11 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('ontongYouthFilterReport', JavaExec) {
+    group = 'devtools'
+    description = 'Writes Ontong Youth financial products filtered from src/test/resources/product_raw.json.'
+    classpath = sourceSets.devtools.runtimeClasspath + files('src/test/resources')
+    mainClass = 'apptive.fin.apicollector.devtools.report.OntongYouthFilterReport'
 }
