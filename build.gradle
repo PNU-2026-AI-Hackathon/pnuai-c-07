@@ -24,7 +24,7 @@ sourceSets {
             srcDir 'src/devtools/java'
         }
         resources {
-            srcDir 'src/devtools/resources'
+//            srcDir 'src/devtools/resources'
         }
         compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
         runtimeClasspath += output + compileClasspath + sourceSets.test.resources
@@ -58,6 +58,6 @@ tasks.named('test') {
 tasks.register('ontongYouthFilterReport', JavaExec) {
     group = 'devtools'
     description = 'Writes Ontong Youth financial products filtered from src/test/resources/product_raw.json.'
-    classpath = sourceSets.devtools.runtimeClasspath + files('src/test/resources')
+    classpath = sourceSets.devtools.runtimeClasspath
     mainClass = 'apptive.fin.apicollector.devtools.report.OntongYouthFilterReport'
 }
