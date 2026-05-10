@@ -48,10 +48,10 @@ INSERT INTO median_incomes (year, household_size, earn_percent, monthly_income) 
 (2026, 6, 180, 1540);
 
 INSERT INTO terms (code, is_required) VALUES
-                                          ('SERVICE_TERMS', TRUE),
-                                          ('PRIVACY_POLICY', TRUE),
-                                          ('LOCATION_SERVICE_TERMS', FALSE),
-                                          ('MARKETING_TERMS', FALSE);
+('SERVICE_TERMS', TRUE),
+('PRIVACY_POLICY', TRUE),
+('LOCATION_SERVICE_TERMS', FALSE),
+('MARKETING_TERMS', FALSE);
 
 -- 2. 약관 버전 데이터 삽입 (term_versions)
 INSERT INTO term_versions (
@@ -186,129 +186,65 @@ INSERT INTO category (name) VALUES
 ('거주지역'),
 ('현재신분'),
 ('저축기간'),
-('핵심혜택'),
+('혜택선택'),
 ('상품관심사'),
 ('은행거래');
 
--- 키워드 value 삽입
--- 1) 거주 지역
 INSERT INTO category_option (category_id, value, code) VALUES
-    (1, '서울', 'REGION_SEOUL'),
-    (1, '부산', 'REGION_BUSAN'),
-    (1, '대구', 'REGION_DAEGU'),
-    (1, '인천', 'REGION_INCHEON'),
-    (1, '광주', 'REGION_GWANGJU'),
-    (1, '대전', 'REGION_DAEJEON'),
-    (1, '울산', 'REGION_ULSAN'),
-    (1, '세종', 'REGION_SEJONG'),
-    (1, '경기', 'REGION_GYEONGGI'),
-    (1, '강원', 'REGION_GANGWON'),
-    (1, '충북', 'REGION_CHUNGBUK'),
-    (1, '충남', 'REGION_CHUNGNAM'),
-    (1, '전북', 'REGION_JEONBUK'),
-    (1, '전남', 'REGION_JEONNAM'),
-    (1, '경북', 'REGION_GYEONGBUK'),
-    (1, '경남', 'REGION_GYEONGNAM'),
-    (1, '제주', 'REGION_JEJU');
+(1, '서울', 'REGION_SEOUL'),
+(1, '부산', 'REGION_BUSAN'),
+(1, '대구', 'REGION_DAEGU'),
+(1, '인천', 'REGION_INCHEON'),
+(1, '광주', 'REGION_GWANGJU'),
+(1, '대전', 'REGION_DAEJEON'),
+(1, '울산', 'REGION_ULSAN'),
+(1, '세종', 'REGION_SEJONG'),
+(1, '경기', 'REGION_GYEONGGI'),
+(1, '강원', 'REGION_GANGWON'),
+(1, '충북', 'REGION_CHUNGBUK'),
+(1, '충남', 'REGION_CHUNGNAM'),
+(1, '전북', 'REGION_JEONBUK'),
+(1, '전남', 'REGION_JEONNAM'),
+(1, '경북', 'REGION_GYEONGBUK'),
+(1, '경남', 'REGION_GYEONGNAM'),
+(1, '제주', 'REGION_JEJU'),
+(2, '미취업', 'STATUS_UNEMPLOYED'),
+(2, '알바/프리랜서', 'STATUS_PART_TIME'),
+(2, '중소기업 재직', 'STATUS_SME_WORKER'),
+(2, '군복무', 'STATUS_MILITARY'),
+(3, '5년 이상', 'TERM_OVER_5_YEARS'),
+(3, '2~3년', 'TERM_2_TO_3_YEARS'),
+(3, '1년 내외', 'TERM_AROUND_1_YEAR'),
+(4, '최고이율 중심', 'BENEFIT_MAX_INTEREST'),
+(4, '비과세', 'BENEFIT_TAX_FREE'),
+(4, '우대조건 간편', 'BENEFIT_EASY_CONDITION'),
+(4, '정부기여금', 'BENEFIT_GOV_SUBSIDY'),
+(5, '저축', 'INTEREST_SAVINGS'),
+(5, '대출', 'INTEREST_LOAN'),
+(6, '첫거래 고객', 'BANK_FIRST_TRANSACTION'),
+(6, '급여이체 가능', 'BANK_SALARY_TRANSFER'),
+(6, '카드실적 연동', 'BANK_CARD_USAGE');
 
--- 2) 현재 신분
-INSERT INTO category_option (category_id, value, code) VALUES
-   (2, '미취업', 'STATUS_UNEMPLOYED'),
-   (2, '알바/프리랜서', 'STATUS_PART_TIME'),
-   (2, '중소기업 재직', 'STATUS_SME_WORKER'),
-   (2, '군복무', 'STATUS_MILITARY');
-
--- 3) 저축 기간
-INSERT INTO category_option (category_id, value, code) VALUES
-   (3, '5년 이상', 'TERM_OVER_5_YEARS'),
-   (3, '2~3년', 'TERM_2_TO_3_YEARS'),
-   (3, '1년 내외', 'TERM_AROUND_1_YEAR');
-
--- 4) 핵심 혜택
-INSERT INTO category_option (category_id, value, code) VALUES
-   (4, '최고이율 중심', 'BENEFIT_MAX_INTEREST'),
-   (4, '비과세', 'BENEFIT_TAX_FREE'),
-   (4, '우대조건 간편', 'BENEFIT_EASY_CONDITION'),
-   (4, '정부기여금', 'BENEFIT_GOV_SUBSIDY');
-
--- 5) 상품 관심사
-INSERT INTO category_option (category_id, value, code) VALUES
-   (5, '저축', 'INTEREST_SAVINGS'),
-   (5, '대출', 'INTEREST_LOAN');
-
--- 6) 은행 거래
-INSERT INTO category_option (category_id, value, code) VALUES
-   (6, '첫거래 고객', 'BANK_FIRST_TRANSACTION'),
-   (6, '급여이체 가능', 'BANK_SALARY_TRANSFER'),
-   (6, '카드실적 연동', 'BANK_CARD_USAGE');
-
-
---테스트용 임시 데이터 (삭제 예정)
 INSERT INTO provider (source_id, code, name) VALUES
-    ((SELECT id FROM product_source WHERE code = 'FSS'), '0010363', '더케이저축은행');
+((SELECT id FROM product_source WHERE code = 'FSS'), '0010363', '더케이저축은행'),
+((SELECT id FROM product_source WHERE code = 'ONTONG'), 'GOV001', '금융위원회'),
+((SELECT id FROM product_source WHERE code = 'FSS'), '0010364', '국민은행');
 
-INSERT INTO product (source_id, provider_id, type, product_code, product_name,
-    content, base_rate, max_rate, min_monthly_limit, max_monthly_limit,
-    min_age, max_age, requires_homeless, requires_householder, is_joinable)
-VALUES (
-    (SELECT id FROM product_source WHERE code = 'FSS'),
-    (SELECT id FROM provider WHERE code = '0010363'),
-    'SAVING', '240076', 'e-회전식정기예금',
-    '단리/복리 선택 가능', 3.45, 3.45, 10, 100,
-    19, 34, false, false, true
-);
+INSERT INTO product (source_id, type, product_code, product_name, content) VALUES
+((SELECT id FROM product_source WHERE code = 'FSS'), 'SAVING', '240076', 'e-회전식정기예금', '단리/복리 선택 가능'),
+((SELECT id FROM product_source WHERE code = 'ONTONG'), 'POLICY', 'GOV001', '청년내일채움공제', '중소기업 재직 청년 자산형성 지원'),
+((SELECT id FROM product_source WHERE code = 'ONTONG'), 'POLICY', 'GOV002', '청년도약계좌', '청년 자산형성 주거 상품'),
+((SELECT id FROM product_source WHERE code = 'FSS'), 'SAVING', 'BANK001', '청년우대형 적금', '만 19~29세 전용 우대 적금');
 
-INSERT INTO product_option (product_id, intr_rate_type, intr_rate_type_nm, save_trm, intr_rate, intr_rate2)
-VALUES
-    ((SELECT id FROM product WHERE product_code = '240076'), 'S', '단리', 12, 3.45, 3.45),
-    ((SELECT id FROM product WHERE product_code = '240076'), 'M', '복리', 12, 3.45, 3.45);
-
--- 제공기관 추가
-INSERT INTO provider (source_id, code, name) VALUES
-    ((SELECT id FROM product_source WHERE code = 'ONTONG'), 'GOV001', '금융위원회'),
-    ((SELECT id FROM product_source WHERE code = 'FSS'), '0010364', '국민은행');
-
--- 2. 근속 요건 있는 상품 (미취업자 제외 확인용)
-INSERT INTO product (source_id, provider_id, type, product_code, product_name,
-    content, base_rate, max_rate, min_monthly_limit, max_monthly_limit,
-    min_age, max_age, min_tenure_months, requires_homeless, requires_householder, is_joinable)
-VALUES (
-    (SELECT id FROM product_source WHERE code = 'ONTONG'),
-    (SELECT id FROM provider WHERE code = 'GOV001'),
-    'POLICY', 'GOV001', '청년내일채움공제',
-    '중소기업 재직 청년 자산형성 지원', 10.0, 10.0, 12, 50,
-    15, 34, 6, false, false, true  -- 근속 6개월 이상 필요
-);
-
--- 3. 무주택 요건 있는 상품
-INSERT INTO product (source_id, provider_id, type, product_code, product_name,
-    content, base_rate, max_rate, min_monthly_limit, max_monthly_limit,
-    min_age, max_age, requires_homeless, requires_householder, is_joinable)
-VALUES (
-    (SELECT id FROM product_source WHERE code = 'ONTONG'),
-    (SELECT id FROM provider WHERE code = 'GOV001'),
-    'POLICY', 'GOV002', '청년도약계좌',
-    '청년 자산형성 지원 상품', 4.5, 6.0, 1, 70,
-    19, 34, true, false, true  -- 무주택 요건
-);
-
--- 4. 나이 제한 좁은 상품 (나이 초과 테스트용)
-INSERT INTO product (source_id, provider_id, type, product_code, product_name,
-    content, base_rate, max_rate, min_monthly_limit, max_monthly_limit,
-    min_age, max_age, requires_homeless, requires_householder, is_joinable)
-VALUES (
-    (SELECT id FROM product_source WHERE code = 'FSS'),
-    (SELECT id FROM provider WHERE code = '0010364'),
-    'SAVING', 'BANK001', '청년우대형 적금',
-    '만 19~29세 전용 우대 적금', 3.8, 4.5, 10, 50,
-    19, 29, false, false, true  -- 29세 이하만 가입 가능
-);
-
--- 5. 옵션 추가 (기존 상품 + 새 FSS 상품)
-INSERT INTO product_option (product_id, intr_rate_type, intr_rate_type_nm, save_trm, intr_rate, intr_rate2)
-VALUES
-    ((SELECT id FROM product WHERE product_code = '240076'), 'S', '단리', 12, 3.45, 3.45),
-    ((SELECT id FROM product WHERE product_code = '240076'), 'M', '복리', 12, 3.45, 3.45),
-    ((SELECT id FROM product WHERE product_code = 'BANK001'), 'S', '단리', 12, 3.8, 4.5),
-    ((SELECT id FROM product WHERE product_code = 'BANK001'), 'S', '단리', 24, 3.5, 4.2),
-    ((SELECT id FROM product WHERE product_code = 'BANK001'), 'M', '복리', 12, 3.8, 4.5);
+INSERT INTO product_properties (
+    product_id, provider_id, base_rate, max_rate, min_monthly_limit, max_monthly_limit,
+    min_age, max_age, min_tenure_months, requires_homeless, requires_householder, is_joinable,
+    intr_rate_type, save_trm
+) VALUES
+((SELECT id FROM product WHERE product_code = '240076'), (SELECT id FROM provider WHERE code = '0010363'), 3.45, 3.45, 10, 100, 19, 34, NULL, false, false, true, 'SINGLE_INTEREST', 12),
+((SELECT id FROM product WHERE product_code = '240076'), (SELECT id FROM provider WHERE code = '0010363'), 3.45, 3.45, 10, 100, 19, 34, NULL, false, false, true, 'COMPOUND_INTEREST', 12),
+((SELECT id FROM product WHERE product_code = 'GOV001'), (SELECT id FROM provider WHERE code = 'GOV001'), 10.0, 10.0, 12, 50, 15, 34, 6, false, false, true, NULL, NULL),
+((SELECT id FROM product WHERE product_code = 'GOV002'), (SELECT id FROM provider WHERE code = 'GOV001'), 4.5, 6.0, 1, 70, 19, 34, NULL, true, false, true, NULL, NULL),
+((SELECT id FROM product WHERE product_code = 'BANK001'), (SELECT id FROM provider WHERE code = '0010364'), 3.8, 4.5, 10, 50, 19, 29, NULL, false, false, true, 'SINGLE_INTEREST', 12),
+((SELECT id FROM product WHERE product_code = 'BANK001'), (SELECT id FROM provider WHERE code = '0010364'), 3.5, 4.2, 10, 50, 19, 29, NULL, false, false, true, 'SINGLE_INTEREST', 24),
+((SELECT id FROM product WHERE product_code = 'BANK001'), (SELECT id FROM provider WHERE code = '0010364'), 3.8, 4.5, 10, 50, 19, 29, NULL, false, false, true, 'COMPOUND_INTEREST', 12);

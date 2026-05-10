@@ -5,7 +5,9 @@ import lombok.Builder;
 @Builder
 public record ProductRateDto(
         Long productId,
+        Long productPropertyId,
         String productName,
+        String providerName,
         String source,
         double baseRate,
         double achievableRate,

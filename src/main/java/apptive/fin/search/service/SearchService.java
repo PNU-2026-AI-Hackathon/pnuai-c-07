@@ -1,18 +1,17 @@
 package apptive.fin.search.service;
 
 import apptive.fin.category.service.CategoryOptionService;
+import apptive.fin.global.error.BusinessException;
 import apptive.fin.search.CategoryIdEnum;
 import apptive.fin.search.KeywordValueEnum;
+import apptive.fin.search.SearchErrorCode;
 import apptive.fin.search.dto.*;
 import apptive.fin.search.entity.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 @Transactional(readOnly = true)
 public class SearchService {
 
-    private final CategoryOptionService categoryOptionService;
     private final EligibilityFilterService eligibilityFilterService;
     private final MatchScoreService matchScoreService;
     private final RateCalculatorService rateCalculatorService;
@@ -67,33 +65,6 @@ public class SearchService {
                 .build();
     }
 
-    private ResolvedKeywords resolveKeywords(List<OptionRequestDto> options){
-        Map<Long, KeywordValueEnum> mapping = categoryOptionService.getOptionMap();
 
-        List<KeywordValueEnum> regions = new ArrayList<>();
-        List<KeywordValueEnum> identities = new ArrayList<>();
-        KeywordValueEnum savingPeriod = null;
-        List<KeywordValueEnum> benefits = new ArrayList<>();
-        List<KeywordValueEnum> bankConds = new ArrayList<>();
 
-        for (OptionRequestDto option : options){
-            KeywordValueEnum kw = mapping.get(option.optionId());
-            if(kw == null) continue;
-
-            Long categoryId = option.categoryId();
-            if (categoryId.equals(CategoryIdEnum.REGION.getId())) regions.add(kw);
-            else if(categoryId.equals(CategoryIdEnum.IDENTITY.getId())) identities.add(kw);
-            else if(categoryId.equals(CategoryIdEnum.PERIOD.getId())) savingPeriod = kw;
-            else if(categoryId.equals(CategoryIdEnum.BENEFIT.getId())) benefits.add(kw);
-            else if(categoryId.equals(CategoryIdEnum.BANK_COND.getId())) bankConds.add(kw);
-        }
-        return new ResolvedKeywords(regions,identities,savingPeriod, bankConds,benefits);
-    }
-    public record ResolvedKeywords(
-            List<KeywordValueEnum> regions,
-            List<KeywordValueEnum> identities,
-            KeywordValueEnum savingPeriod,
-            List<KeywordValueEnum> coreBenefits,
-            List<KeywordValueEnum> bankConditions
-    ){}
 }

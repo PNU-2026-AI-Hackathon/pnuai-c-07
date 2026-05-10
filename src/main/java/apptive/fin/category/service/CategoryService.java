@@ -2,6 +2,12 @@ package apptive.fin.category.service;
 
 import apptive.fin.category.dto.*;
 import apptive.fin.category.repository.CategoryRepository;
+import apptive.fin.global.error.BusinessException;
+import apptive.fin.search.CategoryIdEnum;
+import apptive.fin.search.KeywordValueEnum;
+import apptive.fin.search.SearchErrorCode;
+import apptive.fin.search.dto.OptionRequestDto;
+import apptive.fin.search.dto.ResolvedKeywords;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,4 +49,7 @@ public class CategoryService {
                 })
                 .toList();
     }
+
+
+
 }

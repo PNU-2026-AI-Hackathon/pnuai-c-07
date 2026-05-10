@@ -1,14 +1,13 @@
 package apptive.fin.search.entity;
 
 import apptive.fin.search.KeywordValueEnum;
-import apptive.fin.search.ProductType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 
 @Entity
 @Getter
-@Table(name = "product_keyword")
+@Table(name = "product_property_keyword")
 public class ProductKeyword {
 
     @Id
@@ -16,8 +15,8 @@ public class ProductKeyword {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "product_property_id")
+    private ProductProperty productProperty;
 
     @Enumerated(EnumType.STRING)
     private KeywordValueEnum keywordCode;

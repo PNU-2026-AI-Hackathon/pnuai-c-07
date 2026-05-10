@@ -7,6 +7,7 @@ import apptive.fin.search.dto.OptionRequestDto;
 import apptive.fin.search.dto.ProductMatchDto;
 import apptive.fin.search.dto.SearchRequestDto;
 import apptive.fin.search.entity.ProductKeyword;
+import apptive.fin.search.entity.ProductProperty;
 import org.springframework.stereotype.Service;
 import apptive.fin.search.entity.Product;
 
@@ -28,8 +29,6 @@ public class MatchScoreService {
         boolean isGov = p.getSource().getCode().equals("ONTONG");
         Map<String, Double> weights = distributeWeights(keywords,isGov);
 
-        List<KeywordValueEnum> productKeywords= p.getKeywords().stream().map(ProductKeyword::getKeywordCode).toList();
-
         Map<Long, KeywordValueEnum> mapping = getKeywordMapping(keywords);
         List<KeywordValueEnum> coreBenefits   = filterByCategory(mapping, CategoryIdEnum.BENEFIT.getId());
         List<KeywordValueEnum> identities     = filterByCategory(mapping, CategoryIdEnum.IDENTITY.getId());
@@ -38,31 +37,76 @@ public class MatchScoreService {
                 .filter(kw -> kw == TERM_AROUND_1_YEAR || kw == TERM_2_TO_3_YEARS || kw == TERM_OVER_5_YEARS)
                 .findFirst().orElse(null);
 
-        double benefitScore  = calcBenefitScore(coreBenefits, productKeywords, isGov)
-                            * weights.get(ScoreWeightEnum.GOV_BENEFITS.getKey());
-        double periodScore   = calcPeriodScore(savingPeriod, p)
-                            * weights.get(ScoreWeightEnum.GOV_PERIOD.getKey());
-        double identityScore = calcIdentityScore(identities, productKeywords, isGov)
-                            * weights.get(ScoreWeightEnum.GOV_IDENTITY.getKey());
-        double depositScore  = calcDepositScore(detail.monthlySavingsGoal(), p)
-                            * weights.get(ScoreWeightEnum.GOV_DEPOSIT.getKey());
-        double bankCondScore = calcBankCondScore(bankConditions, productKeywords)
-                            * weights.get(ScoreWeightEnum.GOV_DEPOSIT.getKey());
+        List<ProductPropertyScore> propertyScores = p.getProperties().stream()
+                .map(property -> scoreProperty(
+                        property,
+                        coreBenefits,
+                        identities,
+                        bankConditions,
+                        savingPeriod,
+                        detail.monthlySavingsGoal(),
+                        isGov,
+                        weights
+                ))
+                .toList();
+
+        ProductPropertyScore bestScore = propertyScores.stream()
+                .max((left, right) -> Double.compare(left.totalScore(), right.totalScore()))
+                .orElseGet(() -> new ProductPropertyScore(null, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
 
         return ProductMatchDto.builder()
                 .productId(p.getId())
+                .productPropertyId(bestScore.property() != null ? bestScore.property().getId() : null)
                 .productName(p.getProductName())
+                .providerName(providerName(bestScore.property()))
                 .source(p.getSource().getCode())
-                .totalScore(benefitScore + periodScore + identityScore + depositScore + bankCondScore)
-                .benefitScore(benefitScore)
-                .periodScore(periodScore)
-                .identityScore(identityScore)
-                .depositScore(depositScore)
-                .bankCondScore(bankCondScore)
+                .totalScore(bestScore.totalScore())
+                .benefitScore(bestScore.benefitScore())
+                .periodScore(bestScore.periodScore())
+                .identityScore(bestScore.identityScore())
+                .depositScore(bestScore.depositScore())
+                .bankCondScore(bestScore.bankCondScore())
                 .build();
     }
 
     // 점수 계산
+
+    private ProductPropertyScore scoreProperty(
+            ProductProperty property,
+            List<KeywordValueEnum> coreBenefits,
+            List<KeywordValueEnum> identities,
+            List<KeywordValueEnum> bankConditions,
+            KeywordValueEnum savingPeriod,
+            Long monthlyDeposit,
+            boolean isGov,
+            Map<String, Double> weights
+    ) {
+        List<KeywordValueEnum> propertyKeywords = property.getKeywords().stream()
+                .map(ProductKeyword::getKeywordCode)
+                .toList();
+
+        double benefitScore = calcBenefitScore(coreBenefits, propertyKeywords, isGov)
+                * weights.get(ScoreWeightEnum.GOV_BENEFITS.getKey());
+        double periodScore = calcPeriodScore(savingPeriod, property)
+                * weights.get(ScoreWeightEnum.GOV_PERIOD.getKey());
+        double identityScore = calcIdentityScore(identities, propertyKeywords, isGov)
+                * weights.get(ScoreWeightEnum.GOV_IDENTITY.getKey());
+        double depositScore = calcDepositScore(monthlyDeposit, property)
+                * weights.get(ScoreWeightEnum.GOV_DEPOSIT.getKey());
+        double bankCondScore = calcBankCondScore(bankConditions, propertyKeywords)
+                * weights.get(ScoreWeightEnum.GOV_DEPOSIT.getKey());
+        double totalScore = benefitScore + periodScore + identityScore + depositScore + bankCondScore;
+
+        return new ProductPropertyScore(
+                property,
+                totalScore,
+                benefitScore,
+                periodScore,
+                identityScore,
+                depositScore,
+                bankCondScore
+        );
+    }
 
     private double calcBenefitScore(List<KeywordValueEnum> selected, List<KeywordValueEnum> productKeywords, boolean isGov) {
         if (selected.isEmpty()) return 0.0;
@@ -79,15 +123,14 @@ public class MatchScoreService {
         return (double) matched / applicable.size();
     }
 
-    private double calcPeriodScore(KeywordValueEnum selected, Product p) {
+    private double calcPeriodScore(KeywordValueEnum selected, ProductProperty property) {
         if (selected == null) return 0.0;
 
-        // 금감원 상품은 options에서 기간 확인
-        if (!p.getOptions().isEmpty()) {
-            return p.getOptions().stream().anyMatch(opt -> {
-                int[] range = periodRange(selected);
-                return opt.getSaveTrm() >= range[0] && opt.getSaveTrm() <= range[1];
-            }) ? 1.0 : isAdjacentOption(p, selected) ? 0.5 : 0.0;
+        if (property.getSaveTrm() != null) {
+            int[] range = periodRange(selected);
+            int saveTrm = property.getSaveTrm();
+            if (saveTrm >= range[0] && saveTrm <= range[1]) return 1.0;
+            return isAdjacentOption(property, selected) ? 0.5 : 0.0;
         }
 
         return 0.0;
@@ -108,10 +151,14 @@ public class MatchScoreService {
         return selected.stream().anyMatch(productKeywords::contains) ? 1.0 : 0.4;
     }
 
-    private double calcDepositScore(long monthlyDeposit, Product p) {
-        if (p.getMaxMonthlyLimit() == null) return 1.0;
-        if (monthlyDeposit <= p.getMaxMonthlyLimit()) return 1.0;
-        return (double) p.getMaxMonthlyLimit() / monthlyDeposit;
+    private double calcDepositScore(Long monthlyDeposit, ProductProperty property) {
+        if (monthlyDeposit == null) return 0.0;
+
+        Long maxMonthlyLimit = property.getMaxMonthlyLimit();
+
+        if (maxMonthlyLimit == null) return 1.0;
+        if (monthlyDeposit <= maxMonthlyLimit) return 1.0;
+        return (double) maxMonthlyLimit / monthlyDeposit;
     }
 
     private double calcBankCondScore(List<KeywordValueEnum> selected, List<KeywordValueEnum> productKeywords) {
@@ -170,20 +217,35 @@ public class MatchScoreService {
         };
     }
 
-    private boolean isAdjacentOption(Product p, KeywordValueEnum selected) {
-        return p.getOptions().stream().anyMatch(opt -> {
-            int trm = opt.getSaveTrm();
-            return switch (selected) {
-                case TERM_AROUND_1_YEAR -> trm >= 19 && trm <= 42;
-                case TERM_2_TO_3_YEARS  -> (trm >= 6 && trm <= 18) || trm >= 43;
-                case TERM_OVER_5_YEARS  -> trm >= 19 && trm <= 42;
-                default -> false;
-            };
-        });
+    private boolean isAdjacentOption(ProductProperty property, KeywordValueEnum selected) {
+        int trm = property.getSaveTrm();
+        return switch (selected) {
+            case TERM_AROUND_1_YEAR -> trm >= 19 && trm <= 42;
+            case TERM_2_TO_3_YEARS -> (trm >= 6 && trm <= 18) || trm >= 43;
+            case TERM_OVER_5_YEARS -> trm >= 19 && trm <= 42;
+            default -> false;
+        };
     }
 
     private boolean isSpecializedKeyword(KeywordValueEnum kw) {
         return kw == STATUS_MILITARY || kw == STATUS_SME_WORKER || kw == STATUS_UNEMPLOYED;
+    }
+
+    private String providerName(ProductProperty property) {
+        return property != null && property.getProvider() != null
+                ? property.getProvider().getName()
+                : null;
+    }
+
+    private record ProductPropertyScore(
+            ProductProperty property,
+            double totalScore,
+            double benefitScore,
+            double periodScore,
+            double identityScore,
+            double depositScore,
+            double bankCondScore
+    ) {
     }
 
 }

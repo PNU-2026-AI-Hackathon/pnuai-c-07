@@ -4,66 +4,85 @@ import apptive.fin.search.KeywordValueEnum;
 import apptive.fin.search.dto.ProductRateDto;
 import apptive.fin.search.dto.SearchRequestDto;
 import apptive.fin.search.entity.Product;
+import apptive.fin.search.entity.ProductProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
-import java.util.List;
 
-// 탭 B - 금리 높은 순
 @Service
 public class RateCalculatorService {
     public ProductRateDto calculate(Product p, SearchRequestDto request) {
-        List<KeywordValueEnum> bankConditions = request.options().stream()
-                .map(opt -> KeywordValueEnum.from(String.valueOf(opt.optionId())))
-                .filter(kw -> kw == KeywordValueEnum.BANK_SALARY_TRANSFER
-                        || kw == KeywordValueEnum.BANK_CARD_USAGE
-                        || kw == KeywordValueEnum.BANK_FIRST_TRANSACTION)
-                .toList();
+        ProductProperty bestProperty = p.getProperties().stream()
+                .max(Comparator.comparingDouble(this::effectiveRate))
+                .orElse(null);
 
-        // FSS - 유저 조건에 맞는 상품 중 최고 금리
-        if(!p.getOptions().isEmpty()){
-            double bestRate = p.getOptions().stream()
-                    .map(opt -> opt.getIntrRate2()!= null
-                            ? opt.getIntrRate2().doubleValue()
-                            : opt.getIntrRate().doubleValue())
-                    .max(Comparator.naturalOrder())
-                    .orElse(0.0);
-
+        boolean hasRateOption = p.getProperties().stream()
+                .anyMatch(property -> property.getBaseRate() != null || property.getMaxRate() != null);
+        if (hasRateOption) {
             return ProductRateDto.builder()
                     .productId(p.getId())
+                    .productPropertyId(bestProperty != null ? bestProperty.getId() : null)
                     .productName(p.getProductName())
+                    .providerName(providerName(bestProperty))
                     .source(p.getSource().getCode())
-                    .baseRate(p.getBaseRate() != null ? p.getBaseRate().doubleValue(): 0.0)
-                    .achievableRate(bestRate)
+                    .baseRate(baseRate(bestProperty))
+                    .achievableRate(bestProperty != null ? effectiveRate(bestProperty) : 0.0)
                     .isSubscription(false)
                     .build();
         }
 
-        // 온통청년 - 청약 여부 체크
-        boolean isSubscription = p.getKeywords().stream()
-                .anyMatch(k -> k.getKeywordCode() == KeywordValueEnum.INTEREST_SAVINGS);
+        ProductProperty subscriptionProperty = p.getProperties().stream()
+                .filter(property -> property.getKeywords().stream()
+                        .anyMatch(k -> k.getKeywordCode() == KeywordValueEnum.INTEREST_SAVINGS))
+                .findFirst()
+                .orElse(null);
 
-        if(isSubscription){
+        if (subscriptionProperty != null) {
             return ProductRateDto.builder()
                     .productId(p.getId())
+                    .productPropertyId(subscriptionProperty.getId())
                     .productName(p.getProductName())
+                    .providerName(providerName(subscriptionProperty))
                     .source(p.getSource().getCode())
                     .isSubscription(true)
                     .subscriptionNote("청약: 금리 비교 대상 아님")
                     .build();
         }
 
-        double baseRate = p.getBaseRate() != null ? p.getBaseRate().doubleValue() : 0.0;
-        double maxRate = p.getMaxRate() != null ? p.getMaxRate().doubleValue() : baseRate;
+        double baseRate = baseRate(bestProperty);
+        double maxRate = bestProperty != null ? effectiveRate(bestProperty) : baseRate;
 
         return ProductRateDto.builder()
                 .productId(p.getId())
+                .productPropertyId(bestProperty != null ? bestProperty.getId() : null)
                 .productName(p.getProductName())
+                .providerName(providerName(bestProperty))
                 .source(p.getSource().getCode())
                 .baseRate(baseRate)
                 .achievableRate(maxRate)
                 .isSubscription(false)
                 .build();
+    }
 
+    private double baseRate(ProductProperty property) {
+        return property != null && property.getBaseRate() != null
+                ? property.getBaseRate().doubleValue()
+                : 0.0;
+    }
+
+    private double effectiveRate(ProductProperty property) {
+        if (property.getMaxRate() != null) {
+            return property.getMaxRate().doubleValue();
+        }
+        if (property.getBaseRate() != null) {
+            return property.getBaseRate().doubleValue();
+        }
+        return 0.0;
+    }
+
+    private String providerName(ProductProperty property) {
+        return property != null && property.getProvider() != null
+                ? property.getProvider().getName()
+                : null;
     }
 }
