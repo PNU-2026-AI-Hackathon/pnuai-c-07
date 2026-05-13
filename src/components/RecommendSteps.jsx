@@ -23,7 +23,7 @@ export function StepSavingPlan({ data, setData, cats, onNext}) {
             onChange={(e) => setData({ ...data, monthlyAmount: Number(e.target.value) })}
             className="w-110 h-1 bg-[#D0D0D0] rounded-lg appearance-none cursor-pointer accent-[#03BFA5] mb-1" />
           
-          <div className="flex justify-between text-[13px] text-[#454545] mb-10 px-0.5">
+          <div className="flex text-medium justify-between text-[13px] text-[#454545] mb-10 px-0.5">
             <span>1만원</span>
             <span>100만원</span>
           </div>
@@ -33,7 +33,7 @@ export function StepSavingPlan({ data, setData, cats, onNext}) {
           <input type="number" value={amount}
             onChange={(e) => setData({ ...data, monthlyAmount: Math.min(100, Math.max(1, Number(e.target.value))) })}
             className="w-10 text-center text-[#CACACA] text-sm font-medium focus:outline-none bg-transparent" />
-          <span className="text-sm text-[#454545]">만원</span>
+          <span className="text-sm text-regular text-[#454545]">만원</span>
         </div>
       </div>
       <NavButtons isFirst onNext={onNext} />
@@ -361,7 +361,7 @@ export function StepHousing({ data, setData, onPrev, onNext }) {
 }
 
 // 8. 재직 정보 (근속 기간) (Step 2-5)
-export function StepEmployment({ data, setData, onPrev, onSubmit }) {
+export function StepEmployment({ data, setData, onPrev, onNext }) {
   const months = data.employmentMonths || 0;
   
   return (
@@ -377,20 +377,17 @@ export function StepEmployment({ data, setData, onPrev, onSubmit }) {
       <div className="pl-4">
         {/* 근속 기간 */}
         <div className="flex items-center gap-1.5 mb-6">
-          <p className="text-[15px] text-[#454545] font-medium">근속 기간</p>
-          <div className="w-[15px] h-[15px] rounded-full border border-[#03BFA5] flex items-center justify-center">
+          <p className="text-[16px] text-[#454545] font-medium">근속 기간</p>
+          <div className="w-3.75 h-3.75 rounded-full border border-[#03BFA5] flex items-center justify-center">
             <span className="text-[#03BFA5] text-[10px] font-bold">i</span>
           </div>
         </div>
 
-        <div className="w-full max-w-[450px] mb-2">
+        <div className="w-full max-w-112.5 mb-1">
           <input 
-            type="range" 
-            min={0} 
-            max={120} 
-            value={months}
+            type="range" min={0} max={120} value={months}
             onChange={(e) => setData({ ...data, employmentMonths: Number(e.target.value) })}
-            className="w-full h-[4px] bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#03BFA5]" 
+            className="w-full h-1 bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#03BFA5]" 
           />
           <div className="flex justify-between text-[13px] text-[#8F8F8F] mt-2">
             <span>0개월</span>
@@ -398,7 +395,7 @@ export function StepEmployment({ data, setData, onPrev, onSubmit }) {
           </div>
         </div>
 
-        <div className="flex items-center w-full max-w-[340px] h-[40px] border border-[#D9D9D9] rounded-full px-5 bg-white mb-3 mt-8">
+        <div className="flex items-center w-full max-w-85 h-10 border border-[#D9D9D9] rounded-full px-5 bg-white mb-3 mt-8">
           <FormInput 
             type="number" 
             value={months}
@@ -433,12 +430,65 @@ export function StepEmployment({ data, setData, onPrev, onSubmit }) {
             첫 직장입니다.
           </span>
         </label>
-        <div className="max-w-[450px]">
+        <div className="max-w-112.5">
           <InfoBox>첫 직장 선택 시 신규 취업자 전용 상품을 추천합니다.</InfoBox>
         </div>
       </div>
       <div className="mt-12">
-        <NavButtons onPrev={onPrev} onNext={onSubmit} isLast />
+        <NavButtons onPrev={onPrev} onNext={onNext} />
+      </div>
+    </StepLayout>
+  );
+}
+
+// 9. 주 거래 은행 (Step 2-6)
+export function StepMainBank({ data, setData, onPrev, onSubmit }) {
+  const bankOptions = [
+    { optionId: "kb", optionValue: "KB국민" },
+    { optionId: "shinhan", optionValue: "신한" },
+    { optionId: "woori", optionValue: "우리" },
+    { optionId: "hana", optionValue: "하나" },
+    { optionId: "nh", optionValue: "NH농협" },
+    { optionId: "ibk", optionValue: "IBK기업" },
+    { optionId: "kakaobank", optionValue: "카카오뱅크" },
+    { optionId: "tossbank", optionValue: "토스뱅크" },
+  ];
+
+  return (
+    <StepLayout step={2} title="상세 정보" sub="Y-Fin.만의 정확한 적합도 분석과 예상 수익률 계산을 위해 필요한 정보입니다."
+    >
+      <div className="flex items-center gap-1.5 mb-8">
+        <p className="text-[18px] text-[#454545] font-medium">주 거래 은행</p>
+        <div className="w-4 h-4 rounded-full border border-[#03BFA5] text-[#03BFA5] flex items-center justify-center text-[10px] font-bold">i</div>
+      </div>
+      
+
+      <div className="pl-2">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 max-w-100 mb-7">
+          {bankOptions.map((bank) => {
+            const isSelected = (data.mainBanks || []).includes(bank.optionId);
+            return (
+              <button
+                key={bank.optionId}
+                type="button"
+                onClick={() => toggleField(data, setData, "mainBanks", bank.optionId)}
+                className={`h-11 rounded-full border text-[15px] font-medium transition-all flex items-center justify-center
+                  ${isSelected 
+                    ? "bg-[#00BFA5] border-[#00BFA5] text-white font-regular" 
+                    : "bg-white border-[#D9D9D9] text-[#454545] font-regular  hover:border-[#00BFA5]"
+                  }`}
+              >
+                {bank.optionValue}
+              </button>
+            );
+          })}
+        </div>
+      </div> 
+      <div className="w-full max-w-105 [&>div]:w-full [&>div]:justify-center [&>div]:py-2 px-2">
+          <InfoBox>복수 선택 가능합니다.</InfoBox>
+      </div>
+      <div className="mt-12">
+        <NavButtons onPrev={onPrev} onSubmit={onSubmit} isLast disabled={!data.mainBanks || data.mainBanks.length === 0} />
       </div>
     </StepLayout>
   );

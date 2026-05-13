@@ -9,6 +9,7 @@ import {
   StepHouseholdIncome,
   StepHousing,
   StepEmployment,
+  StepMainBank,
 } from "../components/RecommendSteps";
 import { useState } from "react";
 
@@ -30,7 +31,8 @@ export default function Recommend() {
     <StepRegion          data={formData} setData={setFormData} cats={cats} onPrev={go(3)} onNext={go(5)} />,
     <StepHouseholdIncome data={formData} setData={setFormData} cats={cats} onPrev={go(4)} onNext={go(6)} />,
     <StepHousing         data={formData} setData={setFormData}             onPrev={go(5)} onNext={go(7)} />,
-    <StepEmployment      data={formData} setData={setFormData}             onPrev={go(6)} onSubmit={handleSubmit} />,
+    <StepEmployment      data={formData} setData={setFormData}             onPrev={go(6)} onNext={go(8)} />,
+    <StepMainBank        data={formData} setData={setFormData}             onPrev={go(7)} onSubmit={handleSubmit} />
   ];
 
   return (

@@ -4,7 +4,7 @@ export default function InfoBox({ children }) {
       <div className="w-4 h-4 rounded-full bg-[#03BFA5] text-[#FFFFFF] flex items-center justify-center text-[10px] font-bold shrink-0">
         i
       </div>
-      <span className="text-[#000000] text-xs font-regular">{children}</span>
+      <span className="text-[#000000] text-xs bg-[#EFFFFD] font-regular">{children}</span>
     </div>
   );
 }
