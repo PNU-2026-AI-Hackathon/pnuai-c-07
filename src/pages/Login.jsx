@@ -9,7 +9,7 @@ export default function Login() {
       className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col"
       style={{ backgroundImage: `url(${bubbleBg})` }}
     >
-      <main className="flex-1 flex flex-col items-center justify-end pb-[5%]">
+      <main className="flex-1 flex flex-col items-center justify-end pb-[9%]">
         <img src={keyImg} alt="열쇠" className="w-90" />
         <TextAndButtons />
       </main>

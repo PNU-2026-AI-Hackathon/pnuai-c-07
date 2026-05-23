@@ -3,7 +3,7 @@ import logo from '../assets/logo.png'
 
 export default function Header() {
   return (
-    <header className="sticky top-0 w-full h-22 flex items-center px-[3.5%] bg-white z-50">
+    <header className="sticky top-0 w-full h-18 flex items-center px-[3.5%] bg-white z-50">
       <Logo />
       <NavMenu />
       <div className="ml-auto">
@@ -37,7 +37,7 @@ function NavMenu() {
           onClick={() => navigate(item.path)}
           className={`font-[Inter] font-medium text-[17px] cursor-pointer whitespace-nowrap transition-colors
             ${location.pathname === item.path
-              ? 'text-[#515151]'
+              ? 'text-[#03BFA5]'
               : 'text-gray-400 hover:text-[#515151]'
             }`}
         >

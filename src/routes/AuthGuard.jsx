@@ -29,12 +29,12 @@ export default function AuthGuard({ children }) {
         
         // 권한 확인
         // ----------- 잠시 주석처리!!!!!!!!!!!! ---------------
-        // if (response.data.userRole === 'BEFORE_AGREED') {
-        //   setIsLoading(false);
-        //   navigate('/terms');
-        // } else {
+        if (response.data.userRole === 'BEFORE_AGREED') {
           setIsLoading(false);
-        // }
+          navigate('/terms');
+        } else {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("로그인 안 됨:", error);
         navigate('/login'); // 쫓아내기
