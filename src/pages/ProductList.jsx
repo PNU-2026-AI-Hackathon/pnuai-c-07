@@ -1,0 +1,219 @@
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext"; 
+import InfoIcon from "../components/InfoIcon";
+import { TopCard, ListItem } from "../components/ProductComponents";
+
+const INITIAL_PRODUCTS = [
+  { id: 1, category: "정부 청년 상품", title: "청년 미래 적금", subtitle: "정부 지원 · 3년 만기 · 월 1만~50만원", baseRate: "5.0", maxRate: "16.9", myRate: "10.2", suitability: 52, tags: ["적합도 52%", "비과세", "정부기여금"] },
+  { id: 2, category: "정부 청년 상품", title: "청년 내일 저축 계좌", subtitle: "정부 지원 (은행 위탁) · 3년 만기 · 월 10만~30만원", baseRate: "2.0", maxRate: "5.0", myRate: "4.5", suitability: 52, tags: ["적합도 52%", "비과세", "급여 이체_우대", "마케팅_동의_ok"] },
+  { id: 3, category: "정부 청년 상품", title: "청년 내일 저축 계좌", subtitle: "정부 지원 (은행 위탁) · 3년 만기 · 월 10만~30만원", baseRate: "2.0", maxRate: "5.0", myRate: "4.5", suitability: 52, tags: ["적합도 52%", "비과세", "급여 이체_우대", "마케팅_동의_ok"] },
+  { id: 4, category: "정부 청년 상품", title: "청년 내일 저축 계좌", subtitle: "정부 지원 (은행 위탁) · 3년 만기 · 월 10만~30만원", baseRate: "2.0", maxRate: "5.0", myRate: "4.5", suitability: 52, tags: ["적합도 52%", "비과세", "급여 이체_우대", "마케팅_동의_ok"] },
+  { id: 5, category: "시중 은행 상품 · 제 1금융권", title: "급여하나 월복리 적금", subtitle: "하나은행 · 1년~3년 만기 · 월 1만~300만원", baseRate: "2.0", maxRate: "5.0", myRate: "3.2", suitability: 52, tags: ["적합도 52%", "급여 이체_우대", "카드 실적 우대"] },
+  { id: 6, category: "시중 은행 상품 · 제 1금융권", title: "급여하나 월복리 적금", subtitle: "하나은행 · 1년~3년 만기 · 월 1만~300만원", baseRate: "2.0", maxRate: "5.0", myRate: "3.2", suitability: 52, tags: ["적합도 52%", "급여 이체_우대", "카드 실적 우대"] },
+  { id: 7, category: "시중 은행 상품 · 제 1금융권", title: "급여하나 월복리 적금", subtitle: "하나은행 · 1년~3년 만기 · 월 1만~300만원", baseRate: "2.0", maxRate: "5.0", myRate: "3.2", suitability: 52, tags: ["적합도 52%", "급여 이체_우대", "카드 실적 우대"] },
+  { id: 8, category: "청약 상품", title: "청년 주택드림 청약통장", subtitle: "정부지원 · 월 2만~100만원", baseRate: "2.0", maxRate: "5.0", myRate: "3.7", suitability: 52, tags: ["적합도 52%", "내집마련"] },
+];
+
+export default function ProductList() {
+  const { accessToken } = useAuth();
+  const isLoggedIn = !!accessToken; 
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("나에게 맞는 순");
+  const [activeFilter, setActiveFilter] = useState("전체");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const filters = ["전체", "🏢 정부 지원", "🏦 제 1금융권", "🏠 청약"];
+
+  const handleTabClick = (tabName) => {
+    if (tabName === "내가 달성 가능한 금리 순" && !isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    setActiveTab(tabName);
+  };
+
+  const processedProducts = [...INITIAL_PRODUCTS]
+    .filter(p => !searchTerm || p.title.includes(searchTerm))
+    .sort((a, b) => activeTab === "나에게 맞는 순" ? b.suitability - a.suitability : parseFloat(b.myRate) - parseFloat(a.myRate));
+
+  const topThree = processedProducts.slice(0, 3);
+
+  const Sections = [
+    { name: "정부 청년 상품", filterKey: "🏢 정부 지원" },
+    { name: "시중 은행 상품 · 제 1금융권", filterKey: "🏦 제 1금융권" },
+    { name: "청약 상품", filterKey: "🏠 청약" }
+  ];
+
+  return (
+    <div className="h-screen w-screen bg-white flex flex-col overflow-hidden select-none">
+      
+      {/* 상단 고정 검색바 영역 */}
+      <div className="bg-white pt-8 pb-4 shrink-0">
+        <div className="max-w-[800px] mx-auto px-4">
+          <div className="relative w-full">
+            <svg className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+            <input 
+              type="text" placeholder="상품명으로 검색하기" value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-[56px] pl-16 pr-16 rounded-full border-2 border-[#03BFA5] text-[16px] text-[#333333] placeholder-gray-400 focus:outline-none shadow-sm bg-white"
+            />
+            <button className="absolute right-2.5 top-1/2 -translate-y-1/2 w-[38px] h-[38px] rounded-full bg-[#03BFA5] flex items-center justify-center hover:bg-[#02A68F] transition-colors">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 메인 콘텐츠 영역 바구니 */}
+      <div className="max-w-287.5 w-full mx-auto px-4 flex-1 pb-6 min-h-0 flex flex-col">
+        
+        <div className="flex items-end gap-4 h-auto shrink-0 relative z-50">
+          
+          {/* 탭 버튼 묶음 */}
+          <div className="flex items-end">
+            <button
+              type="button"
+              onClick={() => handleTabClick("나에게 맞는 순")}
+              className={`px-5 h-9 flex items-center justify-center text-[15px] font-bold rounded-t-xs border-t border-x transition-all ${
+                activeTab === "나에게 맞는 순" 
+                  ? "bg-[#03BFA5] text-white border-[#03BFA5] z-10" 
+                  : "text-[#03BFA5] bg-white border-[#03BFA5] opacity-90 hover:opacity-100"
+              }`}
+            >
+              나에게 맞는 순
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabClick("내가 달성 가능한 금리 순")}
+              className={`px-5 h-9 flex items-center justify-center gap-1.5 text-[15px] font-bold rounded-t-xs border-t border-x transition-all ${
+                activeTab === "내가 달성 가능한 금리 순" 
+                  ? "bg-[#03BFA5] text-white border-[#03BFA5]" 
+                  : "text-[#03BFA5] bg-white border-[#03BFA5] border-b-white"
+              }`}
+            >
+              {!isLoggedIn && (
+                <svg className="w-4 h-4 text-[#03BFA5]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              )}
+              내가 달성 가능한 금리 순
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-1 pb-2.5">
+            <span className="text-[15px] text-[#03BFA5] font-regular tracking-tight">
+              {activeTab === "나에게 맞는 순" ? "적합도란?" : "달성 가능 금리란?"}
+            </span>
+            
+            <InfoIcon 
+              text={
+                activeTab === "나에게 맞는 순" 
+                  ? "선택하신 키워드(핵심 혜택 · 저축 기간 · 현재 신분 · 은행 거래)를 기준으로 산정한 매칭 점수예요.\n정부 지원 상품과 제 1금융권 상품별로 가중치를 다르게 반영하여 산정했어요."
+                  : "입력하신 정보(소득 · 근속 · 주거래 은행 등)와 단계 1 키워드를 기반으로 실제로 받을 수 있는 우대조건만 적용한 실질 금리에요.\n정부 상품과 시중은행 상품의 계산 방식이 달라요."
+              } 
+            />
+          </div>
+
+        </div>
+
+        <div className="bg-white rounded-b-xl border-x border-b border-[#EBEBEB] shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+          
+          {/* 필터 버튼 바 */}
+          <div className="p-6 pb-4 border-b border-gray-100 shrink-0 bg-white">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex gap-2">
+                {filters.map(filter => (
+                  <button key={filter} onClick={() => setActiveFilter(filter)} className={`flex items-center px-3 py-1 rounded-md border text-[14px] font-medium transition-colors ${activeFilter === filter ? "border-[#03BFA5] text-[#03BFA5] bg-[#F0FFFE] shadow-sm" : "border-gray-200 text-gray-500 bg-white hover:bg-gray-50"}`}>
+                    {filter}
+                  </button>
+                ))}
+              </div>
+              <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-sm border border-gray-200 bg-white text-[13px] text-[#454545] font-medium hover:bg-gray-50 shadow-sm whitespace-nowrap">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                입력 정보 수정
+              </button>
+            </div>
+
+            {/* 안내 문구 */}
+            <div className="flex items-center gap-1.5 mt-4 text-[14px] font-medium text-[#03BFA5]">
+              {isLoggedIn ? (
+                <><div className="w-[18px] h-[18px] rounded-full bg-[#03BFA5] text-white flex items-center justify-center text-[11px] font-bold">✓</div><span>총 160개 상품 중 자격요건 미충족 상품 23개가 제외되었어요.</span></>
+              ) : (
+                <><div className="w-[18px] h-[18px] rounded-full bg-[#03BFA5] text-white flex items-center justify-center text-[12px] font-bold">i</div><span>로그인하면 자격요건 필터링 결과와 내가 달성 가능한 금리를 확인할 수 있어요.</span></>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 pt-4 bg-white">
+            
+            {/* TOP 3 */}
+            <div className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {topThree.map((product, index) => (
+                  <TopCard key={product.id} rank={index + 1} title={product.title} subtitle={product.subtitle} baseRate={product.baseRate} maxRate={product.maxRate} myRate={product.myRate} tags={product.tags} isBest={index === 0} isLoggedIn={isLoggedIn} />
+                ))}
+              </div>
+            </div>
+
+            {/* 하단 세로형 분리 목록 */}
+            {Sections.map((sec) => {
+              if (activeFilter !== "전체" && activeFilter !== sec.filterKey) return null;
+
+              const sectionProducts = processedProducts.filter(p => p.category === sec.name);
+              if (sectionProducts.length === 0) return null;
+
+              return (
+                <div key={sec.name} className="mt-8">
+                  <h2 className="text-[16px] font-bold text-[#333333] mb-3 ml-1">
+                    {sec.name}
+                  </h2>
+                  <div>
+                    {sectionProducts.map((product) => (
+                      <ListItem key={product.id} title={product.title} subtitle={product.subtitle} baseRate={product.baseRate} maxRate={product.maxRate} myRate={product.myRate} tags={product.tags} isLoggedIn={isLoggedIn} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+          </div>
+        </div>
+      </div>
+
+      {/* 모달 팝업 */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[24px] w-full max-w-[420px] p-8 text-center shadow-2xl relative">
+            <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="w-14 h-14 bg-[#F0FFFE] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-[#03BFA5]" fill="currentColor" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <h2 className="text-[22px] font-bold text-[#03BFA5] mb-2">로그인 후 이용할 수 있어요</h2>
+            <p className="text-[14px] text-[#03BFA5] mb-6 leading-relaxed">나에게 맞는 실질 우대금리를<br/>로그인 후 바로 확인해보세요.</p>
+            <div className="flex flex-col gap-2.5 mb-8 text-left">
+              {["소득·근속·주거래 은행 등 내 정보를 바탕으로 실질 금리를 계산해드려요.", "실제 충족 가능한 우대조건만 적용해 정확한 금리를 보여드려요.","단계2 정보 입력 후 더 정밀한 맞춤 추천이 활성화됩니다."].map((text, i) => (
+                <div key={i} className="flex items-start gap-3 border border-[#03BFA5] rounded-lg p-3 bg-[#F0FFFE]">
+                  <div className="mt-0.5 w-4 h-4 rounded-sm bg-[#03BFA5] flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="text-[12px] text-[#454545] leading-snug">{text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button className="w-full py-3 rounded-lg border border-gray-300 text-gray-700 font-bold text-[14px] hover:bg-gray-50">로그인하고 확인하기</button>
+              <button className="w-full py-3 rounded-lg border border-gray-300 text-gray-700 font-bold text-[14px] hover:bg-gray-50">회원가입 후 이용하기</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
